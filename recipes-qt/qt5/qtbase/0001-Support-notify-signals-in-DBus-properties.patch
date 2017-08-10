@@ -1,0 +1,617 @@
+From 3fe7534ad6099d81fb647b7e2d2ac2c93a286f86 Mon Sep 17 00:00:00 2001
+From: Steven van der Schoot <steven.vanderschoot@solarteameindhoven.nl>
+Date: Mon, 7 Aug 2017 02:29:30 +0200
+Subject: [PATCH] Support notify signals in DBus properties
+
+---
+ src/dbus/qdbusabstractadaptor.cpp       | 142 ++++++++++++++++++++------------
+ src/dbus/qdbusabstractadaptor_p.h       |   2 +
+ src/dbus/qdbusabstractinterface.cpp     |  38 ++++++++-
+ src/dbus/qdbusabstractinterface_p.h     |  18 +++-
+ src/dbus/qdbusconnection_p.h            |   1 +
+ src/dbus/qdbusintegrator.cpp            |  47 +++++++++--
+ src/dbus/qdbusinterface.cpp             |   6 +-
+ src/dbus/qdbusinterface_p.h             |   2 +-
+ src/tools/qdbusxml2cpp/qdbusxml2cpp.cpp |  34 ++++++++
+ 9 files changed, 221 insertions(+), 69 deletions(-)
+
+diff --git a/src/dbus/qdbusabstractadaptor.cpp b/src/dbus/qdbusabstractadaptor.cpp
+index 993607a643..ee996512bf 100644
+--- a/src/dbus/qdbusabstractadaptor.cpp
++++ b/src/dbus/qdbusabstractadaptor.cpp
+@@ -290,6 +290,16 @@ void QDBusAdaptorConnector::relaySlot(void **argv)
+     }
+ }
+ 
++const char* QDBusAdaptorConnector::getPropertyNameFromSignal(QObject *obj, const QMetaMethod &mm)
++{
++    const QMetaObject *metaObj = obj->metaObject();
++    for(int i = 0; i < metaObj->propertyCount(); i++) {
++        if(metaObj->property(i).notifySignalIndex() == mm.methodIndex())
++            return metaObj->property(i).name();
++    }
++    return nullptr;
++}
++
+ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **argv)
+ {
+     if (lastSignalIdx < QObject::staticMetaObject.methodCount())
+@@ -304,33 +314,41 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
+         // it's an adaptor, so the real object is in fact its parent
+         realObject = realObject->parent();
+ 
+-    // break down the parameter list
+-    QVector<int> types;
+-    QString errorMsg;
+-    int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
+-    if (inputCount == -1) {
+-        // invalid signal signature
+-        qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s: %s",
+-                 senderMetaObject->className(), mm.methodSignature().constData(),
+-                 qPrintable(errorMsg));
+-        return;
+-    }
+-    if (inputCount + 1 != types.count() ||
+-        types.at(inputCount) == QDBusMetaTypeId::message()) {
+-        // invalid signal signature
+-        qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s",
+-                 senderMetaObject->className(), mm.methodSignature().constData());
+-        return;
+-    }
++    const char* propertyname = getPropertyNameFromSignal(realObject, mm);
++    if(propertyname == nullptr) {
++        // it's a generic signal
++
++        // break down the parameter list
++        QVector<int> types;
++        QString errorMsg;
++        int inputCount = qDBusParametersForMethod(mm, types, errorMsg);
++        if (inputCount == -1) {
++            // invalid signal signature
++            qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s: %s",
++                     senderMetaObject->className(), mm.methodSignature().constData(),
++                     qPrintable(errorMsg));
++            return;
++        }
++        if (inputCount + 1 != types.count() ||
++            types.at(inputCount) == QDBusMetaTypeId::message()) {
++            // invalid signal signature
++            qWarning("QDBusAbstractAdaptor: Cannot relay signal %s::%s",
++                     senderMetaObject->className(), mm.methodSignature().constData());
++            return;
++        }
+ 
+-    QVariantList args;
+-    const int numTypes = types.count();
+-    args.reserve(numTypes - 1);
+-    for (int i = 1; i < numTypes; ++i)
+-        args << QVariant(types.at(i), argv[i]);
++        QVariantList args;
++        const int numTypes = types.count();
++        args.reserve(numTypes - 1);
++        for (int i = 1; i < numTypes; ++i)
++            args << QVariant(types.at(i), argv[i]);
+ 
+-    // now emit the signal with all the information
+-    emit relaySignal(realObject, senderMetaObject, lastSignalIdx, args);
++        // now emit the signal with all the information
++        emit relaySignal(realObject, senderMetaObject, lastSignalIdx, args);
++    } else {
++        // it's a property changed signal
++        emit propertyUpdateSignal(realObject, senderMetaObject, propertyname, realObject->property(propertyname));
++    }
+ }
+ 
+ // our Meta Object
+@@ -338,30 +356,37 @@ void QDBusAdaptorConnector::relay(QObject *senderObj, int lastSignalIdx, void **
+ // the relaySlot slot gets called with the void** array
+ 
+ struct qt_meta_stringdata_QDBusAdaptorConnector_t {
+-    QByteArrayData data[10];
+-    char stringdata[96];
++    QByteArrayData data[15];
++    char stringdata[150];
+ };
+ #define QT_MOC_LITERAL(idx, ofs, len) \
+     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
+-        offsetof(qt_meta_stringdata_QDBusAdaptorConnector_t, stringdata) + ofs \
+-        - idx * sizeof(QByteArrayData) \
++    qptrdiff(offsetof(qt_meta_stringdata_QDBusAdaptorConnector_t, stringdata) + ofs \
++        - idx * sizeof(QByteArrayData)) \
+     )
+ static const qt_meta_stringdata_QDBusAdaptorConnector_t qt_meta_stringdata_QDBusAdaptorConnector = {
+     {
+-QT_MOC_LITERAL(0, 0, 21),
+-QT_MOC_LITERAL(1, 22, 11),
+-QT_MOC_LITERAL(2, 34, 0),
+-QT_MOC_LITERAL(3, 35, 3),
+-QT_MOC_LITERAL(4, 39, 18),
+-QT_MOC_LITERAL(5, 58, 10),
+-QT_MOC_LITERAL(6, 69, 3),
+-QT_MOC_LITERAL(7, 73, 4),
+-QT_MOC_LITERAL(8, 78, 9),
+-QT_MOC_LITERAL(9, 88, 6)
++QT_MOC_LITERAL(0, 0, 21), // "QDBusAdaptorConnector"
++QT_MOC_LITERAL(1, 22, 20), // "propertyUpdateSignal"
++QT_MOC_LITERAL(2, 43, 0), // ""
++QT_MOC_LITERAL(3, 44, 3), // "obj"
++QT_MOC_LITERAL(4, 48, 18), // "const QMetaObject*"
++QT_MOC_LITERAL(5, 67, 2), // "mo"
++QT_MOC_LITERAL(6, 70, 11), // "const char*"
++QT_MOC_LITERAL(7, 82, 12), // "propertyName"
++QT_MOC_LITERAL(8, 95, 5), // "value"
++QT_MOC_LITERAL(9, 101, 11), // "relaySignal"
++QT_MOC_LITERAL(10, 113, 10), // "metaObject"
++QT_MOC_LITERAL(11, 124, 3), // "sid"
++QT_MOC_LITERAL(12, 128, 4), // "args"
++QT_MOC_LITERAL(13, 133, 9), // "relaySlot"
++QT_MOC_LITERAL(14, 143, 6) // "polish"
++
+     },
+-    "QDBusAdaptorConnector\0relaySignal\0\0"
+-    "obj\0const QMetaObject*\0metaObject\0sid\0"
+-    "args\0relaySlot\0polish\0"
++    "QDBusAdaptorConnector\0propertyUpdateSignal\0"
++    "\0obj\0const QMetaObject*\0mo\0const char*\0"
++    "propertyName\0value\0relaySignal\0"
++    "metaObject\0sid\0args\0relaySlot\0polish"
+ };
+ #undef QT_MOC_LITERAL
+ 
+@@ -371,22 +396,24 @@ static const uint qt_meta_data_QDBusAdaptorConnector[] = {
+        7,       // revision
+        0,       // classname
+        0,    0, // classinfo
+-       3,   14, // methods
++       4,   14, // methods
+        0,    0, // properties
+        0,    0, // enums/sets
+        0,    0, // constructors
+        0,       // flags
+-       1,       // signalCount
++       2,       // signalCount
+ 
+  // signals: name, argc, parameters, tag, flags
+-       1,    4,   29,    2, 0x05,
++       1,    4,   34,    2, 0x06 /* Public */,
++       9,    4,   43,    2, 0x06 /* Public */,
+ 
+  // slots: name, argc, parameters, tag, flags
+-       8,    0,   38,    2, 0x0a,
+-       9,    0,   39,    2, 0x0a,
++      13,    0,   52,    2, 0x0a /* Public */,
++      14,    0,   53,    2, 0x0a /* Public */,
+ 
+  // signals: parameters
+-    QMetaType::Void, QMetaType::QObjectStar, 0x80000000 | 4, QMetaType::Int, QMetaType::QVariantList,    3,    5,    6,    7,
++    QMetaType::Void, QMetaType::QObjectStar, 0x80000000 | 4, 0x80000000 | 6, QMetaType::QVariant,    3,    5,    7,    8,
++    QMetaType::Void, QMetaType::QObjectStar, 0x80000000 | 4, QMetaType::Int, QMetaType::QVariantList,    3,   10,   11,   12,
+ 
+  // slots: parameters
+     QMetaType::Void,
+@@ -401,9 +428,10 @@ void QDBusAdaptorConnector::qt_static_metacall(QObject *_o, QMetaObject::Call _c
+         Q_ASSERT(staticMetaObject.cast(_o));
+         QDBusAdaptorConnector *_t = static_cast<QDBusAdaptorConnector *>(_o);
+         switch (_id) {
+-        case 0: _t->relaySignal((*reinterpret_cast< QObject*(*)>(_a[1])),(*reinterpret_cast< const QMetaObject*(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3])),(*reinterpret_cast< const QVariantList(*)>(_a[4]))); break;
+-        case 1: _t->relaySlot(_a); break; // HAND EDIT: add the _a parameter
+-        case 2: _t->polish(); break;
++        case 0: _t->propertyUpdateSignal((*reinterpret_cast< QObject* (*)>(_a[1])),(*reinterpret_cast< const QMetaObject* (*)>(_a[2])),(*reinterpret_cast< const char *(*)>(_a[3])),(*reinterpret_cast< const QVariant(*)>(_a[4]))); break;
++        case 1: _t->relaySignal((*reinterpret_cast< QObject*(*)>(_a[1])),(*reinterpret_cast< const QMetaObject*(*)>(_a[2])),(*reinterpret_cast< int(*)>(_a[3])),(*reinterpret_cast< const QVariantList(*)>(_a[4]))); break;
++        case 2: _t->relaySlot(_a); break; // HAND EDIT: add the _a parameter
++        case 3: _t->polish(); break;
+         default: ;
+         }
+     }
+@@ -433,20 +461,26 @@ int QDBusAdaptorConnector::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
+     if (_id < 0)
+         return _id;
+     if (_c == QMetaObject::InvokeMetaMethod) {
+-        if (_id < 3)
++        if (_id < 4)
+             qt_static_metacall(this, _c, _id, _a);
+-        _id -= 3;
++        _id -= 4;
+     }
+     return _id;
+ }
+ 
+ // SIGNAL 0
+-void QDBusAdaptorConnector::relaySignal(QObject * _t1, const QMetaObject * _t2, int _t3, const QVariantList & _t4)
++void QDBusAdaptorConnector::propertyUpdateSignal(QObject * _t1, const QMetaObject * _t2, const char * _t3, QVariant _t4)
+ {
+     void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)), const_cast<void*>(reinterpret_cast<const void*>(&_t4)) };
+     QMetaObject::activate(this, &staticMetaObject, 0, _a);
+ }
+ 
++void QDBusAdaptorConnector::relaySignal(QObject * _t1, const QMetaObject * _t2, int _t3, const QVariantList & _t4)
++{
++    void *_a[] = { 0, const_cast<void*>(reinterpret_cast<const void*>(&_t1)), const_cast<void*>(reinterpret_cast<const void*>(&_t2)), const_cast<void*>(reinterpret_cast<const void*>(&_t3)), const_cast<void*>(reinterpret_cast<const void*>(&_t4)) };
++    QMetaObject::activate(this, &staticMetaObject, 1, _a);
++}
++
+ QT_END_NAMESPACE
+ 
+ #endif // QT_NO_DBUS
+diff --git a/src/dbus/qdbusabstractadaptor_p.h b/src/dbus/qdbusabstractadaptor_p.h
+index ed28777734..c087c2eab0 100644
+--- a/src/dbus/qdbusabstractadaptor_p.h
++++ b/src/dbus/qdbusabstractadaptor_p.h
+@@ -124,6 +124,7 @@ public: // methods
+ 
+ protected:
+ //signals:
++    void propertyUpdateSignal(QObject *obj, const QMetaObject *mo, const char* propertyName, QVariant value);
+     void relaySignal(QObject *obj, const QMetaObject *metaObject, int sid, const QVariantList &args);
+ 
+ public: // member variables
+@@ -132,6 +133,7 @@ public: // member variables
+ 
+ private:
+     static int relaySlotMethodIndex();
++    static const char* getPropertyNameFromSignal(QObject *obj, const QMetaMethod &mm);
+ };
+ Q_DECLARE_TYPEINFO(QDBusAdaptorConnector::AdaptorData, Q_PRIMITIVE_TYPE);
+ 
+diff --git a/src/dbus/qdbusabstractinterface.cpp b/src/dbus/qdbusabstractinterface.cpp
+index 9f2e688ebb..16dede87bc 100644
+--- a/src/dbus/qdbusabstractinterface.cpp
++++ b/src/dbus/qdbusabstractinterface.cpp
+@@ -104,7 +104,38 @@ static QDBusError checkIfValid(const QString &service, const QString &path,
+     return QDBusError();
+ }
+ 
+-QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv,
++QDBusInterfaceSignalHandler::QDBusInterfaceSignalHandler(QDBusAbstractInterface *obj)
++    : QObject(nullptr), obj(obj)
++{}
++
++void QDBusInterfaceSignalHandler::connectToDBus(QDBusConnection& connection, const QString &service, const QString &path)
++{
++    connection.connect(service, path, QDBusUtil::dbusInterfaceProperties(), "PropertiesChanged", this, SLOT(propertyChanged(QString,QVariantMap,QStringList)));
++}
++
++void QDBusInterfaceSignalHandler::propertyChanged(QString interface, QVariantMap changedProperties, QStringList invalidatedProperties)
++{
++    if(obj->interface() != interface)
++        return;
++
++    const QMetaObject* mo = obj->metaObject();
++    for(auto it = changedProperties.begin(); it != changedProperties.end(); it++) {
++        int ind = mo->indexOfProperty(it.key().toLatin1().constData());
++        if(ind < 0)
++            continue;
++        QMetaProperty property = mo->property(ind);
++        QMetaMethod signal = property.notifySignal();
++        if(!signal.isValid())
++            continue;
++        QVariant& v = it.value();
++        if(v.type() != property.type())
++            continue;
++        signal.invoke(obj, Qt::DirectConnection, QGenericReturnArgument(nullptr), QGenericArgument(v.typeName(), v.data()));
++    }
++}
++
++QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(QDBusAbstractInterface *ifaceObj,
++                                                             const QString &serv,
+                                                              const QString &p,
+                                                              const QString &iface,
+                                                              const QDBusConnection& con,
+@@ -113,6 +144,7 @@ QDBusAbstractInterfacePrivate::QDBusAbstractInterfacePrivate(const QString &serv
+       lastError(checkIfValid(serv, p, iface, isDynamic, (connectionPrivate() &&
+                                                          connectionPrivate()->mode == QDBusConnectionPrivate::PeerMode))),
+       timeout(-1),
++      signalHandler(ifaceObj),
+       isValid(!lastError.isValid())
+ {
+     if (!isValid)
+@@ -136,6 +168,8 @@ void QDBusAbstractInterfacePrivate::initOwnerTracking()
+     currentOwner = connectionPrivate()->getNameOwner(service);
+     if (currentOwner.isEmpty())
+         lastError = connectionPrivate()->lastError;
++    
++    signalHandler.connectToDBus(connection, service, path);
+ }
+ 
+ bool QDBusAbstractInterfacePrivate::canMakeCalls() const
+@@ -336,7 +370,7 @@ QDBusAbstractInterface::QDBusAbstractInterface(QDBusAbstractInterfacePrivate &d,
+ QDBusAbstractInterface::QDBusAbstractInterface(const QString &service, const QString &path,
+                                                const char *interface, const QDBusConnection &con,
+                                                QObject *parent)
+-    : QDBusAbstractInterfaceBase(*new QDBusAbstractInterfacePrivate(service, path, QString::fromLatin1(interface),
++    : QDBusAbstractInterfaceBase(*new QDBusAbstractInterfacePrivate(this, service, path, QString::fromLatin1(interface),
+                                                  con, false), parent)
+ {
+     // keep track of the service owner
+diff --git a/src/dbus/qdbusabstractinterface_p.h b/src/dbus/qdbusabstractinterface_p.h
+index 8e45bae88b..d9d30cbb98 100644
+--- a/src/dbus/qdbusabstractinterface_p.h
++++ b/src/dbus/qdbusabstractinterface_p.h
+@@ -66,6 +66,21 @@
+ 
+ QT_BEGIN_NAMESPACE
+ 
++class QDBusInterfaceSignalHandler : public QObject
++{
++    Q_OBJECT
++public:
++    QDBusInterfaceSignalHandler(QDBusAbstractInterface *obj);
++
++    void connectToDBus(QDBusConnection& connection, const QString &service, const QString &path);
++
++public slots:
++    void propertyChanged(QString interface, QVariantMap changedProperties, QStringList invalidatedProperties);
++
++private:
++    QDBusAbstractInterface *obj;
++};
++
+ class QDBusAbstractInterfacePrivate : public QObjectPrivate
+ {
+ public:
+@@ -78,12 +93,13 @@ public:
+     QString interface;
+     mutable QDBusError lastError;
+     int timeout;
++    QDBusInterfaceSignalHandler signalHandler;
+ 
+     // this is set during creation and never changed
+     // it can't be const because QDBusInterfacePrivate has one more check
+     bool isValid;
+ 
+-    QDBusAbstractInterfacePrivate(const QString &serv, const QString &p,
++    QDBusAbstractInterfacePrivate(QDBusAbstractInterface *ifaceObj, const QString &serv, const QString &p,
+                                   const QString &iface, const QDBusConnection& con, bool dynamic);
+     virtual ~QDBusAbstractInterfacePrivate() { }
+     void initOwnerTracking();
+diff --git a/src/dbus/qdbusconnection_p.h b/src/dbus/qdbusconnection_p.h
+index d323088779..0326a1e449 100644
+--- a/src/dbus/qdbusconnection_p.h
++++ b/src/dbus/qdbusconnection_p.h
+@@ -279,6 +279,7 @@ public slots:
+     void socketRead(int);
+     void socketWrite(int);
+     void objectDestroyed(QObject *o);
++    void propertyUpdateSignal(QObject *obj, const QMetaObject *mo, const char* propertyName, QVariant value);
+     void relaySignal(QObject *obj, const QMetaObject *, int signalId, const QVariantList &args);
+     bool addSignalHook(const QString &key, const SignalHook &hook);
+     bool removeSignalHook(const QString &key, const SignalHook &hook);
+diff --git a/src/dbus/qdbusintegrator.cpp b/src/dbus/qdbusintegrator.cpp
+index 16cd021d0d..7c6d4cd97e 100644
+--- a/src/dbus/qdbusintegrator.cpp
++++ b/src/dbus/qdbusintegrator.cpp
+@@ -630,13 +630,13 @@ static void huntAndUnregister(const QVector<QStringRef> &pathComponents, int i,
+ 
+ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
+                         QObject *needle, const QDBusConnectionPrivate::ObjectTreeNode &haystack,
+-                        bool isScriptable, bool isAdaptor, const QString &path = QString())
++                        int mask, bool isAdaptor, const QString &path = QString())
+ {
+     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator it = haystack.children.constBegin();
+     QDBusConnectionPrivate::ObjectTreeNode::DataList::ConstIterator end = haystack.children.constEnd();
+     for ( ; it != end; ++it) {
+         if (it->isActive())
+-            huntAndEmit(connection, msg, needle, *it, isScriptable, isAdaptor, path + QLatin1Char('/') + it->name);
++            huntAndEmit(connection, msg, needle, *it, mask, isAdaptor, path + QLatin1Char('/') + it->name);
+     }
+ 
+     if (needle == haystack.obj) {
+@@ -644,9 +644,6 @@ static void huntAndEmit(DBusConnection *connection, DBusMessage *msg,
+         if (isAdaptor && (haystack.flags & QDBusConnection::ExportAdaptors) == 0)
+             return;             // no: it comes from an adaptor and we're not exporting adaptors
+         else if (!isAdaptor) {
+-            int mask = isScriptable
+-                       ? QDBusConnection::ExportScriptableSignals
+-                       : QDBusConnection::ExportNonScriptableSignals;
+             if ((haystack.flags & mask) == 0)
+                 return;         // signal was not exported
+         }
+@@ -1248,6 +1245,34 @@ void QDBusConnectionPrivate::objectDestroyed(QObject *obj)
+     obj->disconnect(this);
+ }
+ 
++void QDBusConnectionPrivate::propertyUpdateSignal(QObject *obj, const QMetaObject *mo, const char* propertyName, QVariant value)
++{
++    QDBusMessage message = QDBusMessage::createSignal(QLatin1String("/"), QDBusUtil::dbusInterfaceProperties(),
++                                                      QLatin1String("PropertiesChanged"));
++    QDBusMessagePrivate::setParametersValidated(message, true);
++    QVariantMap propertiesMap;
++    propertiesMap.insert(propertyName, value);
++    QVariantList args;
++    args << qDBusInterfaceFromMetaObject(mo)
++         << propertiesMap
++         << QStringList();
++    message.setArguments(args);
++    QDBusError error;
++    DBusMessage *msg = QDBusMessagePrivate::toDBusMessage(message, capabilities, &error);
++    if (!msg) {
++        qWarning("QDBusConnection: Could not emit signal %s.%s: %s", qPrintable(QDBusUtil::dbusInterfaceProperties()), "PropertiesChanged",
++                 qPrintable(error.message()));
++        lastError = error;
++        return;
++    }
++    q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
++    {
++        QDBusDispatchLocker locker(HuntAndEmitAction, this);
++        huntAndEmit(connection, msg, obj, rootNode, ~0U, false);
++    }
++    q_dbus_message_unref(msg);
++}
++
+ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, int signalId,
+                                          const QVariantList &args)
+ {
+@@ -1285,7 +1310,10 @@ void QDBusConnectionPrivate::relaySignal(QObject *obj, const QMetaObject *mo, in
+     q_dbus_message_set_no_reply(msg, true); // the reply would not be delivered to anything
+     {
+         QDBusDispatchLocker locker(HuntAndEmitAction, this);
+-        huntAndEmit(connection, msg, obj, rootNode, isScriptable, isAdaptor);
++        int mask = isScriptable
++                   ? QDBusConnection::ExportScriptableSignals
++                   : QDBusConnection::ExportNonScriptableSignals;
++        huntAndEmit(connection, msg, obj, rootNode, mask, isAdaptor);
+     }
+     q_dbus_message_unref(msg);
+ }
+@@ -1619,8 +1647,8 @@ void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage
+ {
+     SignalHookHash::const_iterator it = signalHooks.constFind(key);
+     SignalHookHash::const_iterator end = signalHooks.constEnd();
+-    //qDebug("looking for: %s", path.toLocal8Bit().constData());
+-    //qDBusDebug() << signalHooks.keys();
++    // qDebug("looking for: %s", path.toLocal8Bit().constData());
++    // qDBusDebug() << signalHooks.keys();
+     for ( ; it != end && it.key() == key; ++it) {
+         const SignalHook &hook = it.value();
+         if (!hook.service.isEmpty()) {
+@@ -2377,6 +2405,9 @@ void QDBusConnectionPrivate::registerObject(const ObjectTreeNode *node)
+         connect(connector, SIGNAL(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
+                 this, SLOT(relaySignal(QObject*,const QMetaObject*,int,QVariantList)),
+                 Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
++        connect(connector, SIGNAL(propertyUpdateSignal(QObject*,const QMetaObject*,const char*,QVariant)),
++                this, SLOT(propertyUpdateSignal(QObject*,const QMetaObject*,const char*,QVariant)),
++                Qt::ConnectionType(Qt::QueuedConnection | Qt::UniqueConnection));
+     }
+ }
+ 
+diff --git a/src/dbus/qdbusinterface.cpp b/src/dbus/qdbusinterface.cpp
+index 4dd02e8c76..98d74df78b 100644
+--- a/src/dbus/qdbusinterface.cpp
++++ b/src/dbus/qdbusinterface.cpp
+@@ -147,9 +147,9 @@ static void copyArgument(void *to, int id, const QVariant &arg)
+     QDBusMetaType::demarshall(dbarg, id, to);
+ }
+ 
+-QDBusInterfacePrivate::QDBusInterfacePrivate(const QString &serv, const QString &p,
++QDBusInterfacePrivate::QDBusInterfacePrivate(QDBusAbstractInterface *ifaceObj, const QString &serv, const QString &p,
+                                              const QString &iface, const QDBusConnection &con)
+-    : QDBusAbstractInterfacePrivate(serv, p, iface, con, true), metaObject(0)
++    : QDBusAbstractInterfacePrivate(ifaceObj, serv, p, iface, con, true), metaObject(0)
+ {
+     // QDBusAbstractInterfacePrivate's constructor checked the parameters for us
+     if (connection.isConnected()) {
+@@ -215,7 +215,7 @@ QDBusInterfacePrivate::~QDBusInterfacePrivate()
+ */
+ QDBusInterface::QDBusInterface(const QString &service, const QString &path, const QString &interface,
+                                const QDBusConnection &connection, QObject *parent)
+-    : QDBusAbstractInterface(*new QDBusInterfacePrivate(service, path, interface, connection),
++    : QDBusAbstractInterface(*new QDBusInterfacePrivate(this, service, path, interface, connection),
+                              parent)
+ {
+ }
+diff --git a/src/dbus/qdbusinterface_p.h b/src/dbus/qdbusinterface_p.h
+index b726925306..f1e50980ff 100644
+--- a/src/dbus/qdbusinterface_p.h
++++ b/src/dbus/qdbusinterface_p.h
+@@ -68,7 +68,7 @@ public:
+ 
+     QDBusMetaObject *metaObject;
+ 
+-    QDBusInterfacePrivate(const QString &serv, const QString &p, const QString &iface,
++    QDBusInterfacePrivate(QDBusAbstractInterface *ifaceObj, const QString &serv, const QString &p, const QString &iface,
+                           const QDBusConnection &con);
+     ~QDBusInterfacePrivate();
+ 
+diff --git a/src/tools/qdbusxml2cpp/qdbusxml2cpp.cpp b/src/tools/qdbusxml2cpp/qdbusxml2cpp.cpp
+index bbe738dadb..99252db096 100644
+--- a/src/tools/qdbusxml2cpp/qdbusxml2cpp.cpp
++++ b/src/tools/qdbusxml2cpp/qdbusxml2cpp.cpp
+@@ -393,6 +393,16 @@ static QString propertySetter(const QDBusIntrospection::Property &property)
+     return setter;
+ }
+ 
++static QString propertyNotifier(const QDBusIntrospection::Property &property)
++{
++    QString notifier = property.annotations.value(QLatin1String("org.qtproject.QtDBus.PropertyNotifier"));
++    if (!notifier.isEmpty())
++        return notifier + QLatin1String("HoiHoi");
++
++    notifier = property.name + QLatin1String("Changed");
++    return notifier;
++}
++
+ static QString methodName(const QDBusIntrospection::Method &method)
+ {
+     QString name = method.annotations.value(QStringLiteral("org.qtproject.QtDBus.MethodName"));
+@@ -491,6 +501,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
+ 
+     for (const QDBusIntrospection::Interface *interface : interfaces) {
+         QString className = classNameForInterface(interface->name, Proxy);
++        QStringList notifiers;
+ 
+         // comment:
+         hs << "/*" << endl
+@@ -535,6 +546,7 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
+             QString constRefType = constRefArg(type);
+             QString getter = propertyGetter(property);
+             QString setter = propertySetter(property);
++            QString notifier = propertyNotifier(property);
+ 
+             hs << "    Q_PROPERTY(" << type << " " << property.name;
+ 
+@@ -548,6 +560,18 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
+                 // it's writeable
+                 hs << " WRITE " << setter;
+ 
++            // notifier:
++            if (property.access != QDBusIntrospection::Property::Write) {
++                // it's readble, so might be changable
++                hs << " NOTIFY " << notifier;
++                QString notifierFunction;
++                QTextStream ts(&notifierFunction);
++                ts << notifier << '(';
++                ts << type;
++                ts << " newValue)";
++                notifiers << notifierFunction;
++            }
++
+             hs << ")" << endl;
+ 
+             // getter:
+@@ -663,6 +687,8 @@ static void writeProxy(const QString &filename, const QDBusIntrospection::Interf
+         }
+ 
+         hs << "Q_SIGNALS: // SIGNALS" << endl;
++        for(const auto& notifier : notifiers)
++            hs << "    void " << notifier << ";\n";
+         for (const QDBusIntrospection::Signal &signal : interface->signals_) {
+             hs << "    ";
+             if (signal.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
+@@ -812,6 +838,7 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
+ 
+     for (const QDBusIntrospection::Interface *interface : interfaces) {
+         QString className = classNameForInterface(interface->name, Adaptor);
++        QStringList notifiers;
+ 
+         // comment:
+         hs << "/*" << endl
+@@ -860,12 +887,17 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
+             QString constRefType = constRefArg(type);
+             QString getter = propertyGetter(property);
+             QString setter = propertySetter(property);
++            QString notifier = propertyNotifier(property);
+ 
+             hs << "    Q_PROPERTY(" << type << " " << property.name;
+             if (property.access != QDBusIntrospection::Property::Write)
+                 hs << " READ " << getter;
+             if (property.access != QDBusIntrospection::Property::Read)
+                 hs << " WRITE " << setter;
++            if (property.access != QDBusIntrospection::Property::Write) {
++                hs << " NOTIFY " << notifier;
++                notifiers << notifier;
++            }
+             hs << ")" << endl;
+ 
+             // getter:
+@@ -1007,6 +1039,8 @@ static void writeAdaptor(const QString &filename, const QDBusIntrospection::Inte
+         }
+ 
+         hs << "Q_SIGNALS: // SIGNALS" << endl;
++        for(const auto& notifier : notifiers)
++            hs << "    void " << notifier << "();\n";
+         for (const QDBusIntrospection::Signal &signal : interface->signals_) {
+             hs << "    ";
+             if (signal.annotations.value(QLatin1String("org.freedesktop.DBus.Deprecated")) ==
+-- 
+2.13.3
+
