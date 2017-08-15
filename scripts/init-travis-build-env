@@ -1,0 +1,4 @@
+
+cd $1
+export MACHINE=raspberrypi3
+. $1/sources/meta-boot2qt/scripts/setup-environment.sh $1/build

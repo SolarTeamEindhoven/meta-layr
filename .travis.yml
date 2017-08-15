@@ -1,0 +1,31 @@
+language: c++
+compiler: gcc
+# Select Trusty Beta environment, required for testing.
+sudo: required
+dist: trusty
+addons:
+  apt:
+    packages:
+    - s3cmd
+    - diffstat
+    - texinfo
+    - chrpath
+    # Not installed by default on Trusty environment.
+    - xvfb
+    # Not needed, sdl removed from qemu below.
+    # - libsdl1.2-dev
+cache:
+  directories:
+    - ../sources
+    - ../build
+before_script:
+  - mkdir -p "$TRAVIS_BUILD_DIR/../sources"
+  - ln -s "$TRAVIS_BUILD_DIR" "$TRAVIS_BUILD_DIR/../sources/meta-ste"
+  - cd "$TRAVIS_BUILD_DIR/.."
+script:
+  # Set up.
+  - sh sources/meta-ste/scripts/setup.sh
+  - . sources/meta-ste/scripts/init-travis-build-env $(pwd)
+  # And now building...
+  - bitbake gcc-cross-arm
+#  - bitbake ivi-image-devel

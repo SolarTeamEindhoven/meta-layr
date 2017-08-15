@@ -1,0 +1,26 @@
+sources/meta-boot2qt:
+  Branch: morty
+  Revision: 545cfb313238fccdbe799a8006601d3ba50d7f6e
+  Tracking: origin/morty
+  Remote: origin git://code.qt.io/yocto/meta-boot2qt.git
+sources/meta-mingw:
+  Branch: HEAD
+  Revision: bfda0f040958b3c533123071ff031037389eed62
+  Remote: qtyocto git://code.qt.io/yocto/meta-mingw
+sources/meta-openembedded:
+  Branch: HEAD
+  Revision: fe5c83312de11e80b85680ef237f8acb04b4b26e
+  Remote: oe-mirror git://github.com/openembedded/meta-openembedded
+sources/meta-qt5:
+  Branch: 5.9
+  Revision: 5df9d273194e89498ea7fa93ac4ec987007253d2
+  Tracking: qtyocto/5.9
+  Remote: qtyocto git://code.qt.io/yocto/meta-qt5
+sources/meta-raspberrypi:
+  Branch: HEAD
+  Revision: 380bf2ff445c2049bdea15f3bb36e8cb36540345
+  Remote: yocto git://git.yoctoproject.org/meta-raspberrypi
+sources/poky:
+  Branch: HEAD
+  Revision: 8ab3fa375891eba3dc102b6ee7fee3582070654b
+  Remote: yocto git://git.yoctoproject.org/poky
