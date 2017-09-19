@@ -1,0 +1,27 @@
+From 193e314be90ebf08f46bd4b53ca49d50fc5e7ed4 Mon Sep 17 00:00:00 2001
+From: Steven van der Schoot <steven.vanderschoot@solarteameindhoven.nl>
+Date: Sun, 10 Sep 2017 12:24:19 +0200
+Subject: [PATCH] Use DBUS property changed signal
+
+---
+ src/dbus-lib/io.qt.applicationmanager.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/dbus-lib/io.qt.applicationmanager.xml b/src/dbus-lib/io.qt.applicationmanager.xml
+index 70ca111..90b6b37 100644
+--- a/src/dbus-lib/io.qt.applicationmanager.xml
++++ b/src/dbus-lib/io.qt.applicationmanager.xml
+@@ -12,8 +12,8 @@
+       <arg name="id" type="s" direction="out"/>
+       <arg name="aliasId" type="s" direction="out"/>
+     </signal>
+-    <signal name="countChanged">
+-    </signal>
++<!--    <signal name="countChanged">
++    </signal>-->
+     <signal name="applicationAdded">
+       <arg name="id" type="s" direction="out"/>
+     </signal>
+-- 
+2.5.5
+
