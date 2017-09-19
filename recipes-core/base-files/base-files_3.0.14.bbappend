@@ -7,7 +7,7 @@ do_install_append_IVI () {
 	echo "#export STE_APP_PATH=\"/usr/share/IVIapps\"" >> ${D}${sysconfdir}/profile
 	echo "" >> ${D}${sysconfdir}/profile
 	echo "# Default to 96 ppi:" >> ${D}${sysconfdir}/profile
-	echo 'eval $(sudo cat /sys/class/graphics/fb0/virtual_size | sed '"'"'s/^\(.*\),\(.*\)$/WIDTH \1\nHEIGHT \2/'"'"' | awk '"'"'{ print "export QT_QPA_EGLFS_PHYSICAL_"$1"=$((" $2 "*254/960))" }'"'"' | tr '"'"'\n'"'"' '"'"';'"'"')' >> ${D}${sysconfdir}/profile
+	echo 'eval $(cat /sys/class/graphics/fb0/virtual_size | sed '"'"'s/^\(.*\),\(.*\)$/WIDTH \1\nHEIGHT \2/'"'"' | awk '"'"'{ print "export QT_QPA_EGLFS_PHYSICAL_"$1"=$((" $2 "*254/960))" }'"'"' | tr '"'"'\n'"'"' '"'"';'"'"')' >> ${D}${sysconfdir}/profile
 	echo "" >> ${D}${sysconfdir}/profile
 	echo "# Qt5 environement variables:" >> ${D}${sysconfdir}/profile
 	echo "export QT_LOGGING_TO_CONSOLE=\"1\"" >> ${D}${sysconfdir}/profile

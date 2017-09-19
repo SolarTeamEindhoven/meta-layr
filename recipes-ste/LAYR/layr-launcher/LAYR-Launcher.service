@@ -6,12 +6,9 @@ After=systemd-user-sessions.service
 ExecStart=/usr/bin/LAYR-Launcher -platform eglfs
 Environment=XDG_RUNTIME_DIR=/tmp
 Environment=QT_LOGGING_TO_CONSOLE=0
-Environment=QT_IM_MODULE="qtvirtualkeyboard"
-Environment=QT_QPA_EGLFS_INTEGRATION=eglfs_kms
-Environment=STE_APP_PATH=/usr/share/IVIapps
 Environment=STE_SOFTKEY_PROVIDERS=layrsoftkey-emulator
 Environment=STE_VEHICLE_INTERACTION_BACKENDS=LAYR-VehicleIntegration
-Environment=STE_ENABLE_DEBUG=1
+Environment=IVI_ENABLE_DEBUG=1
 Restart=on-failure
 
 [Install]

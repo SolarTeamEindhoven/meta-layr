@@ -8,7 +8,7 @@ STE_MODULE = "LAYR-SoftkeyPlugin"
 inherit qmake5
 require LAYR-git.inc
 
-SRCREV = "a5b5a04b28a919388067391ec0652ef4838d4583"
+SRCREV = "2255ada940e004d0dbecb0b3041c7200525fbdbd"
 
 S = "${WORKDIR}/git"
 

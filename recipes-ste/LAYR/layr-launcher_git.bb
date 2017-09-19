@@ -4,17 +4,20 @@ LICENSE = "LGPL-3.0"
 LIC_FILES_CHKSUM = "file://LICENSE.LGPLv3;md5=c4fe8c6de4eef597feec6e90ed62e962"
 
 STE_MODULE = "LAYR-Launcher"
+STE_MODULE_BRANCH ?= "features/StabilityImprovements"
+STE_MODULE_BRANCH_PARAM ?= "branch=${STE_MODULE_BRANCH}"
 
 inherit qmake5 systemd
 require LAYR-git.inc
 
 SRC_URI += "file://LAYR-Launcher.service"
 
-SRCREV = "c2c78f546585969c6099f4a6d926ec51b4b38b70"
+SRCREV = "3c5a9e43cfdfac7dd4ecc8870925068e91e02b62"
 
 S = "${WORKDIR}/git"
 
-DEPENDS = "qtbase qtdeclarative ivi-launchersdk"
+DEPENDS = "qtbase qtdeclarative"
+RDEPENDS_${PN} = "ivi-launcher-qmlplugins"
 
 do_install_append() {
 	install -m 0755 -d ${D}${systemd_unitdir}/system
