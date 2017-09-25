@@ -13,7 +13,6 @@ RDEPENDS_${PN} += " \
 	libiio-dev \
 	avahi-dev \
 	pi-blaster-dev \
-	qtapplicationmanager-dev \
 	ivi-sdk-dev \
 	ivi-app-dev \
 	ivi-launchersdk-dev \

@@ -9,7 +9,6 @@ RDEPENDS_${PN} += " \
 	libgps \
 	libiio \
 	pi-blaster \
-	qtapplicationmanager \
 	layr-launcher \
 	layr-softkeyplugin \
 	layr-vehicleintegrationplugin \
