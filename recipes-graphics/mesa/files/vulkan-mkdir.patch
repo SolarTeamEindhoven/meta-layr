@@ -35,4 +35,3 @@ index 3857a5dc62..26e9cd410c 100644
  		< $(srcdir)/vulkan/intel_icd.json.in > $@
 -- 
 2.11.0
-

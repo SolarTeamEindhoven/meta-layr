@@ -16,10 +16,10 @@ SRC_URI = "http://dri.freedesktop.org/libdrm/${BP}.tar.bz2 \
            file://0001-configure.ac-Allow-explicit-enabling-of-cunit-tests.patch \
           "
 
-SRC_URI[md5sum] = "d04f3567f0a812188d06f860fded5ab7"
-SRC_URI[sha256sum] = "8cc05c195ac8708199979a94c4e4d1a928c14ec338ecbcb38ead09f54dae11ae"
+SRC_URI[md5sum] = "23800953ed7564988872e1e8c61fde31"
+SRC_URI[sha256sum] = "03a52669da60ead62548a35bc430aafb6c2d8dd21ec9dba3a90f96eff5fe36d6"
 
-inherit autotools pkgconfig
+inherit autotools pkgconfig manpages
 
 EXTRA_OECONF += "--disable-cairo-tests \
                  --without-cunit \
@@ -27,8 +27,8 @@ EXTRA_OECONF += "--disable-cairo-tests \
                  --enable-etnaviv-experimental-api \
                  --enable-install-test-programs \
                  --disable-valgrind \
-                 --disable-manpages \
                 "
+PACKAGECONFIG[manpages] = "--enable-manpages, --disable-manpages, libxslt-native xmlto-native"
 
 ALLOW_EMPTY_${PN}-drivers = "1"
 PACKAGES =+ "${PN}-tests ${PN}-drivers ${PN}-radeon ${PN}-nouveau ${PN}-omap \
@@ -49,4 +49,3 @@ FILES_${PN}-kms = "${libdir}/libkms*.so.*"
 FILES_${PN}-freedreno = "${libdir}/libdrm_freedreno.so.*"
 FILES_${PN}-amdgpu = "${libdir}/libdrm_amdgpu.so.*"
 FILES_${PN}-etnaviv = "${libdir}/libdrm_etnaviv.so.*"
-

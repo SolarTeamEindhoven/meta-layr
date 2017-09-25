@@ -4,6 +4,4 @@ PR = "r0"
 
 inherit nativesdk packagegroup
 
-RDEPENDS_${PN} += " \
-	nativesdk-qtapplicationmanager-tools \
-"
+#RDEPENDS_${PN} += ""

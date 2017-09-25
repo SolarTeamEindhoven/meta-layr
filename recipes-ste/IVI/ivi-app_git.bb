@@ -16,13 +16,13 @@ LIC_FILES_CHKSUM = " \
     file://LICENSE.LGPLv3;md5=c4fe8c6de4eef597feec6e90ed62e962 \
 "
 
-DEPENDS = "qtbase qtdeclarative qtwayland qtwayland-native"
+DEPENDS = "qtbase qtdeclarative qtwayland qtwayland-native qtwebengine"
 
 S = "${WORKDIR}/git"
 
 PV = "0.0.1+git${SRCPV}"
 
-SRCREV = "d627c2581ec3fdf393368772263f5a2d43724c12"
+SRCREV = "c3788aa91cf0eb8b4a62af3dea99fbf736107efb"
 
 PACKAGES += "${PN}-applications"
 FILES_${PN}-applications += " \

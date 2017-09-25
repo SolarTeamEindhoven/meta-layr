@@ -22,4 +22,4 @@ S = "${WORKDIR}/git"
 
 PV = "0.0.1+git${SRCPV}"
 
-SRCREV = "65c8e4c598a3b0ff66e551e863e31e55c16bb280"
+SRCREV = "e4cde7808e8e9e5462a076ae6400ba03a75a6aa5"
