@@ -16,7 +16,7 @@ S = "${WORKDIR}/chromium-build-netflix-1.0.0"
 
 #inherit cmake pythonnative
 
-DEPEND += "tar"
+DEPEND += "tar-native xz-native"
 
 do_install () {
 	install -d ${D}/opt/google/chrome/
