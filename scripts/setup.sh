@@ -63,7 +63,7 @@ applyRepo () {
 		$GIT branch -u "$TRACKING" >/dev/null 2>&1
 	fi
 
-	if [ -n "$REVISION" ]
+	if [ -n "$REVISION" ] && [ "$($GIT rev-parse HEAD)" != "$REVISION" ]
 	then
 		$GIT checkout "$REVISION" >/dev/null 2>&1
 	fi
