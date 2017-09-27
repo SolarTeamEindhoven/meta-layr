@@ -1,6 +1,6 @@
 sources/meta-boot2qt:
   Branch: pyro
-  Revision: ee729f80a65419e780164c2f6510d1a0cb558cd7
+  Revision: f33e451c112d3121db61785d5943b5a2c0a22479
   Tracking: origin/pyro
   Remote: origin git://code.qt.io/yocto/meta-boot2qt.git
 sources/meta-mingw:
@@ -15,16 +15,16 @@ sources/meta-openembedded:
   Remote: oe-mirror git://github.com/openembedded/meta-openembedded
 sources/meta-qt5:
   Branch: 5.9
-  Revision: 801a470205627160cba2829d574ea560bfd3ef69
+  Revision: 6269d8a5bc402e6dafd8ee8499481d29792d1c4a
   Tracking: qtyocto/5.9
   Remote: qtyocto git://code.qt.io/yocto/meta-qt5
 sources/meta-raspberrypi:
   Branch: master
-  Revision: 5a2b34e56c228a2fa768a2b3feeebc9f4600b7c4
+  Revision: f1e2bf782f5906f05dfe7c1a9260ce5b4744f5bc
   Tracking: yocto/master
   Remote: yocto git://git.yoctoproject.org/meta-raspberrypi
 sources/poky:
   Branch: pyro
-  Revision: 072430b9b3a78b318b66371c36e2986d2ed5cba4
+  Revision: 717303e6fbcbbe181ad9645d762eb5a85d934523
   Tracking: yocto/pyro
   Remote: yocto git://git.yoctoproject.org/poky

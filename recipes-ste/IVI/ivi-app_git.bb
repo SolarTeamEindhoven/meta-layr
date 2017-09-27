@@ -20,7 +20,7 @@ DEPENDS = "qtbase qtdeclarative qtwayland qtwayland-native qtwebengine"
 
 S = "${WORKDIR}/git"
 
-PV = "0.0.1+git${SRCPV}"
+PV = "${DISTRO_VERSION}+git${SRCPV}"
 
 SRCREV = "c3788aa91cf0eb8b4a62af3dea99fbf736107efb"
 
