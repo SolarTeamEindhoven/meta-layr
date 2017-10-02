@@ -22,7 +22,7 @@ S = "${WORKDIR}/git"
 
 PV = "${DISTRO_VERSION}+git${SRCPV}"
 
-SRCREV = "c3788aa91cf0eb8b4a62af3dea99fbf736107efb"
+SRCREV = "f78cd9e16f168e99adb87cf8a4d0da34c3b524a9"
 
 PACKAGES += "${PN}-applications"
 FILES_${PN}-applications += " \
