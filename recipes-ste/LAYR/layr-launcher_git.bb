@@ -12,7 +12,7 @@ require LAYR-git.inc
 
 SRC_URI += "file://LAYR-Launcher.service"
 
-SRCREV = "25cefe36ef06618f9fadac1fa923851da1e40d2a"
+SRCREV = "c4e5b12188993563706841cc38ebd8b237101edd"
 
 S = "${WORKDIR}/git"
 
