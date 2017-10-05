@@ -28,3 +28,18 @@ sources/poky:
   Revision: 717303e6fbcbbe181ad9645d762eb5a85d934523
   Tracking: yocto/pyro
   Remote: yocto git://git.yoctoproject.org/poky
+sources/meta-updater:
+  Branch: pyro
+  Revision: e789ff50f9d11f838a3e1cd985cb3ae34c1ca764
+  Tracking: origin/pyro
+  Remote: origin git@github.com:advancedtelematic/meta-updater.git
+sources/meta-rust:
+  Branch: pyro
+  Revision: f6d973c5cacb9b52f32118caa879dcc7922d3c98
+  Tracking: origin/pyro
+  Remote: origin git@github.com:meta-rust/meta-rust.git
+sources/meta-security:
+  Branch: pyro
+  Revision: b20c1242f79873e9da0fc0f5b3902f095dc923e8
+  Tracking: origin/pyro
+  Remote: origin git://git.yoctoproject.org/meta-security

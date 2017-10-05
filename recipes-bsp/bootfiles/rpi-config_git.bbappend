@@ -4,6 +4,7 @@ remove_line() {
 }
 
 DISABLE_OVERSCAN="1"
+RDEPENDS_${PN}_append_sota += " u-boot-otascript"
 
 do_deploy_append() {
         sed -i '/#cec_osd_name/ c\cec_osd_name=${MACHINE_HOSTNAME}' ${DEPLOYDIR}/bcm2835-bootfiles/config.txt
@@ -11,6 +12,7 @@ do_deploy_append() {
         sed -i '/#boot_delay_ms/ c\boot_delay_ms=0' ${DEPLOYDIR}/bcm2835-bootfiles/config.txt
         sed -i '/#disable_splash/ c\disable_splash=1' ${DEPLOYDIR}/bcm2835-bootfiles/config.txt
         sed -i '/#avoid_warnings/ c\avoid_warnings=1' ${DEPLOYDIR}/bcm2835-bootfiles/config.txt
+        sed -i '/#device_tree_address/ c\device_tree_address=0x0c800000' ${DEPLOYDIR}/bcm2835-bootfiles/config.txt
 
 	echo "dtoverlay=ad7998" >>${DEPLOYDIR}/bcm2835-bootfiles/config.txt
 
