@@ -15,7 +15,6 @@ RDEPENDS_${PN} += " \
 	ivi-sdk \
 	ivi-app \
 	ivi-app-applications \
-	pulseaudio-server \
-	pulseaudio-module-bluez5-discover \
+	packagegroup-tools-bluetooth \
 	ofono \
 	"

@@ -1,3 +1,6 @@
+CMDLINE_remove = "console=serial0,115200"
+CMDLINE_append = " console=tty0"
+
 do_configure_prepend() {
     mv -f ${B}/.config ${B}/.config.patched
     CONF_SED_SCRIPT=""
