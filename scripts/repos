@@ -15,7 +15,7 @@ sources/meta-openembedded:
   Remote: oe-mirror git://github.com/openembedded/meta-openembedded
 sources/meta-qt5:
   Branch: 5.9
-  Revision: 6269d8a5bc402e6dafd8ee8499481d29792d1c4a
+  Revision: 88a25de90d720d824b8a4e932ff2ff8faa2b6615
   Tracking: qtyocto/5.9
   Remote: qtyocto git://code.qt.io/yocto/meta-qt5
 sources/meta-raspberrypi:
@@ -30,7 +30,7 @@ sources/poky:
   Remote: yocto git://git.yoctoproject.org/poky
 sources/meta-updater:
   Branch: pyro
-  Revision: e789ff50f9d11f838a3e1cd985cb3ae34c1ca764
+  Revision: 36f1d8668a0ccdfe7f71f886a6829fb33be7cb48
   Tracking: origin/pyro
   Remote: origin git@github.com:advancedtelematic/meta-updater.git
 sources/meta-rust:
