@@ -21,7 +21,6 @@ IMAGE_INSTALL += "\
 	${@bb.utils.contains("DISTRO_FEATURES", "gstreamer010", "packagegroup-b2qt-embedded-gstreamer010", "", d)} \
 	${@bb.utils.contains("DISTRO_FEATURES", "gstreamer", "packagegroup-b2qt-embedded-gstreamer", "", d)} \
 	packagegroup-b2qt-qt5-modules \
-	packagegroup-b2qt-embedded-addons \
 	packagegroup-ivi \
 	"
 

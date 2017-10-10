@@ -17,4 +17,10 @@ RDEPENDS_${PN} += " \
 	ivi-app-applications \
 	packagegroup-tools-bluetooth \
 	ofono \
-	"
+	pulseaudio-server \
+	pulseaudio-misc \
+	pulseaudio-module-echo-cancel \
+	pulseaudio-module-systemd-login \
+	pulseaudio-module-dbus-protocol \
+	qdbd \
+"
