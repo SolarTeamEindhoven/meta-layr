@@ -1,6 +1,6 @@
 sources/meta-boot2qt:
   Branch: pyro
-  Revision: f33e451c112d3121db61785d5943b5a2c0a22479
+  Revision: fb22822ea452bd990b09d0dc96607dd88c915ee2
   Tracking: origin/pyro
   Remote: origin git://code.qt.io/yocto/meta-boot2qt.git
 sources/meta-mingw:
@@ -14,28 +14,27 @@ sources/meta-openembedded:
   Tracking: oe-mirror/pyro
   Remote: oe-mirror git://github.com/openembedded/meta-openembedded
 sources/meta-qt5:
-  Branch: 5.9
-  Revision: 88a25de90d720d824b8a4e932ff2ff8faa2b6615
-  Tracking: qtyocto/5.9
+  Branch: HEAD
+  Revision: d21707ff60066d8ad95b66cbb718e9230540ab50
   Remote: qtyocto git://code.qt.io/yocto/meta-qt5
 sources/meta-raspberrypi:
   Branch: master
-  Revision: f1e2bf782f5906f05dfe7c1a9260ce5b4744f5bc
+  Revision: fe99478aa9ebfbcf78d02bad35fd1310912e4857
   Tracking: yocto/master
   Remote: yocto git://git.yoctoproject.org/meta-raspberrypi
 sources/poky:
   Branch: pyro
-  Revision: 717303e6fbcbbe181ad9645d762eb5a85d934523
+  Revision: b1f14ecddf5960a8ffa133d760a598bd948d21dc
   Tracking: yocto/pyro
   Remote: yocto git://git.yoctoproject.org/poky
 sources/meta-updater:
   Branch: pyro
-  Revision: 36f1d8668a0ccdfe7f71f886a6829fb33be7cb48
+  Revision: 85960c2138bc0e8ca8a70abaf4486284eaadab0e
   Tracking: origin/pyro
   Remote: origin git@github.com:advancedtelematic/meta-updater.git
 sources/meta-rust:
   Branch: pyro
-  Revision: f6d973c5cacb9b52f32118caa879dcc7922d3c98
+  Revision: 94280a636c9a6dd729f9eb3ed88fe85b11ee8ffa
   Tracking: origin/pyro
   Remote: origin git@github.com:meta-rust/meta-rust.git
 sources/meta-security:
