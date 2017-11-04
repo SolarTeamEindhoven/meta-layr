@@ -17,5 +17,4 @@ RDEPENDS_${PN} += " \
 	ivi-app-dev \
 	ivi-launchersdk-dev \
 	ivi-launcher-dev \
-	qtotaupdate-dev \
 	"
